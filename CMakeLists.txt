@@ -37,6 +37,7 @@ set(gRPC_INSTALL_CMAKEDIR "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PACKAGE_NAME}" CA
 
 # Options
 option(gRPC_BUILD_TESTS "Build tests" OFF)
+option(gRPC_BUILD_CODEGEN "Build codegen" ON)
 
 set(gRPC_INSTALL_default ON)
 if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
@@ -78,6 +79,8 @@ if(UNIX)
     set(_gRPC_PLATFORM_LINUX ON)
   elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(_gRPC_PLATFORM_MAC ON)
+  elseif(${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    set(_gRPC_PLATFORM_ANDROID ON)
   else()
     set(_gRPC_PLATFORM_POSIX ON)
   endif()
@@ -120,6 +123,8 @@ endif()
 
 if(_gRPC_PLATFORM_MAC)
   set(_gRPC_ALLTARGETS_LIBRARIES ${CMAKE_DL_LIBS} m pthread)
+elseif(_gRPC_PLATFORM_ANDROID)
+  set(_gRPC_ALLTARGETS_LIBRARIES ${CMAKE_DL_LIBS} m)
 elseif(UNIX)
   set(_gRPC_ALLTARGETS_LIBRARIES ${CMAKE_DL_LIBS} rt m pthread)
 endif()
@@ -696,6 +701,13 @@ target_include_directories(gpr
 target_link_libraries(gpr
   ${_gRPC_ALLTARGETS_LIBRARIES}
 )
+
+if(_gRPC_PLATFORM_ANDROID)
+  target_link_libraries(gpr
+    android
+    log
+  )
+endif(_gRPC_PLATFORM_ANDROID)
 
 foreach(_hdr
   include/grpc/support/alloc.h
@@ -3071,67 +3083,70 @@ if (gRPC_INSTALL)
   )
 endif()
 
+if(_gRPC_BUILD_CODEGEN)
 
-add_library(grpc++_error_details
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.cc
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.cc
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.h
-  ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.h
-  src/cpp/util/error_details.cc
-)
-
-if(WIN32 AND MSVC)
-  set_target_properties(grpc++_error_details PROPERTIES COMPILE_PDB_NAME "grpc++_error_details"
-    COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+  add_library(grpc++_error_details
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.cc
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.h
+    ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.grpc.pb.h
+    src/cpp/util/error_details.cc
   )
+
+  if(WIN32 AND MSVC)
+    set_target_properties(grpc++_error_details PROPERTIES COMPILE_PDB_NAME "grpc++_error_details"
+      COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
+    if (gRPC_INSTALL)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_error_details.pdb
+        DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
+      )
+    endif()
+  endif()
+
+  protobuf_generate_grpc_cpp(
+    src/proto/grpc/status/status.proto
+  )
+
+  target_include_directories(grpc++_error_details
+    PUBLIC $<INSTALL_INTERFACE:${gRPC_INSTALL_INCLUDEDIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${_gRPC_SSL_INCLUDE_DIR}
+    PRIVATE ${_gRPC_PROTOBUF_INCLUDE_DIR}
+    PRIVATE ${_gRPC_ZLIB_INCLUDE_DIR}
+    PRIVATE ${_gRPC_BENCHMARK_INCLUDE_DIR}
+    PRIVATE ${_gRPC_CARES_INCLUDE_DIR}
+    PRIVATE ${_gRPC_GFLAGS_INCLUDE_DIR}
+    PRIVATE ${_gRPC_PROTO_GENS_DIR}
+  )
+
+  target_link_libraries(grpc++_error_details
+    ${_gRPC_BASELIB_LIBRARIES}
+    ${_gRPC_PROTOBUF_LIBRARIES}
+    ${_gRPC_ALLTARGETS_LIBRARIES}
+    grpc++
+  )
+
+  foreach(_hdr
+    include/grpc++/support/error_details.h
+  )
+    string(REPLACE "include/" "" _path ${_hdr})
+    get_filename_component(_path ${_path} PATH)
+    install(FILES ${_hdr}
+      DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
+    )
+  endforeach()
+
+
   if (gRPC_INSTALL)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/grpc++_error_details.pdb
-      DESTINATION ${gRPC_INSTALL_LIBDIR} OPTIONAL
+    install(TARGETS grpc++_error_details EXPORT gRPCTargets
+      RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
+      LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
+      ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
     )
   endif()
-endif()
 
-protobuf_generate_grpc_cpp(
-  src/proto/grpc/status/status.proto
-)
-
-target_include_directories(grpc++_error_details
-  PUBLIC $<INSTALL_INTERFACE:${gRPC_INSTALL_INCLUDEDIR}> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE ${_gRPC_SSL_INCLUDE_DIR}
-  PRIVATE ${_gRPC_PROTOBUF_INCLUDE_DIR}
-  PRIVATE ${_gRPC_ZLIB_INCLUDE_DIR}
-  PRIVATE ${_gRPC_BENCHMARK_INCLUDE_DIR}
-  PRIVATE ${_gRPC_CARES_INCLUDE_DIR}
-  PRIVATE ${_gRPC_GFLAGS_INCLUDE_DIR}
-  PRIVATE ${_gRPC_PROTO_GENS_DIR}
-)
-
-target_link_libraries(grpc++_error_details
-  ${_gRPC_BASELIB_LIBRARIES}
-  ${_gRPC_PROTOBUF_LIBRARIES}
-  ${_gRPC_ALLTARGETS_LIBRARIES}
-  grpc++
-)
-
-foreach(_hdr
-  include/grpc++/support/error_details.h
-)
-  string(REPLACE "include/" "" _path ${_hdr})
-  get_filename_component(_path ${_path} PATH)
-  install(FILES ${_hdr}
-    DESTINATION "${gRPC_INSTALL_INCLUDEDIR}/${_path}"
-  )
-endforeach()
-
-
-if (gRPC_INSTALL)
-  install(TARGETS grpc++_error_details EXPORT gRPCTargets
-    RUNTIME DESTINATION ${gRPC_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${gRPC_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
-  )
-endif()
+endif(_gRPC_BUILD_CODEGEN)
 
 if (gRPC_BUILD_TESTS)
 
@@ -3192,6 +3207,8 @@ foreach(_hdr
 endforeach()
 
 endif (gRPC_BUILD_TESTS)
+
+if (_gRPC_BUILD_CODEGEN)
 
 add_library(grpc++_reflection
   src/cpp/ext/proto_server_reflection.cc
@@ -3254,6 +3271,8 @@ if (gRPC_INSTALL)
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
   )
 endif()
+
+endif(_gRPC_BUILD_CODEGEN)
 
 if (gRPC_BUILD_TESTS)
 
@@ -9955,6 +9974,8 @@ target_link_libraries(grpc_cli
 
 endif (gRPC_BUILD_TESTS)
 
+if(gRPC_BUILD_CODEGEN)
+
 add_executable(grpc_cpp_plugin
   src/compiler/cpp_plugin.cc
 )
@@ -10191,6 +10212,8 @@ if (gRPC_INSTALL)
     ARCHIVE DESTINATION ${gRPC_INSTALL_LIBDIR}
   )
 endif()
+
+endif(gRPC_BUILD_CODEGEN)
 
 if (gRPC_BUILD_TESTS)
 
