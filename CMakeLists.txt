@@ -3083,7 +3083,7 @@ if (gRPC_INSTALL)
   )
 endif()
 
-if(_gRPC_BUILD_CODEGEN)
+if(gRPC_BUILD_CODEGEN)
 
   add_library(grpc++_error_details
     ${_gRPC_PROTO_GENS_DIR}/src/proto/grpc/status/status.pb.cc
@@ -3146,7 +3146,7 @@ if(_gRPC_BUILD_CODEGEN)
     )
   endif()
 
-endif(_gRPC_BUILD_CODEGEN)
+endif(gRPC_BUILD_CODEGEN)
 
 if (gRPC_BUILD_TESTS)
 
@@ -3208,7 +3208,7 @@ endforeach()
 
 endif (gRPC_BUILD_TESTS)
 
-if (_gRPC_BUILD_CODEGEN)
+if (gRPC_BUILD_CODEGEN)
 
 add_library(grpc++_reflection
   src/cpp/ext/proto_server_reflection.cc
@@ -3272,7 +3272,7 @@ if (gRPC_INSTALL)
   )
 endif()
 
-endif(_gRPC_BUILD_CODEGEN)
+endif(gRPC_BUILD_CODEGEN)
 
 if (gRPC_BUILD_TESTS)
 
