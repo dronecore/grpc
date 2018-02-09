@@ -102,6 +102,10 @@ if (MSVC)
   add_definitions(/wd4987 /wd4774 /wd4819 /wd4996 /wd4619)
 endif()
 
+if (IOS)
+  add_definitions(-DPB_NO_PACKED_STRUCTS=1)
+endif()
+
 if (gRPC_USE_PROTO_LITE)
   set(_gRPC_PROTOBUF_LIBRARY_NAME "libprotobuf-lite")
   add_definitions("-DGRPC_USE_PROTO_LITE")
