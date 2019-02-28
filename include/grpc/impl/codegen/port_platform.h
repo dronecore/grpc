@@ -176,13 +176,7 @@
 #else /* _LP64 */
 #define GPR_ARCH_32 1
 #endif /* _LP64 */
-#ifdef __GLIBC__
-#define GPR_POSIX_CRASH_HANDLER 1
-#define GPR_LINUX_PTHREAD_NAME 1
-#include <linux/version.h>
-#else /* musl libc */
 #define GPR_MUSL_LIBC_COMPAT 1
-#endif
 #elif defined(__APPLE__)
 #include <Availability.h>
 #include <TargetConditionals.h>
