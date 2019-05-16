@@ -233,6 +233,7 @@ add_custom_target(plugins
   grpc_ruby_plugin
 )
 
+if (gRPC_BUILD_TOOLS)
 add_custom_target(tools_c
   DEPENDS
   check_epollexclusive
@@ -250,6 +251,7 @@ add_custom_target(tools_cxx
 
 add_custom_target(tools
   DEPENDS tools_c tools_cxx)
+endif (gRPC_BUILD_TOOLS)
 
 if (gRPC_BUILD_TESTS)
 add_custom_target(buildtests_c)
@@ -6182,6 +6184,7 @@ target_link_libraries(channel_create_test
   endif()
 
 endif (gRPC_BUILD_TESTS)
+if (gRPC_BUILD_TOOLS)
 
 add_executable(check_epollexclusive
   test/build/check_epollexclusive.c
@@ -6213,6 +6216,7 @@ target_link_libraries(check_epollexclusive
     target_compile_options(check_epollexclusive PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${_gRPC_CORE_NOSTDCXX_FLAGS}>)
   endif()
 
+endif (gRPC_BUILD_TOOLS)
 if (gRPC_BUILD_TESTS)
 
 add_executable(chttp2_hpack_encoder_test
@@ -7832,6 +7836,7 @@ target_link_libraries(grpc_completion_queue_threading_test
   endif()
 
 endif (gRPC_BUILD_TESTS)
+if (gRPC_BUILD_TOOLS)
 
 add_executable(grpc_create_jwt
   test/core/security/create_jwt.cc
@@ -7865,6 +7870,7 @@ target_link_libraries(grpc_create_jwt
     target_compile_options(grpc_create_jwt PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${_gRPC_CORE_NOSTDCXX_FLAGS}>)
   endif()
 
+endif (gRPC_BUILD_TOOLS)
 if (gRPC_BUILD_TESTS)
 
 add_executable(grpc_credentials_test
@@ -8037,6 +8043,7 @@ target_link_libraries(grpc_jwt_verifier_test
   endif()
 
 endif (gRPC_BUILD_TESTS)
+if (gRPC_BUILD_TOOLS)
 
 add_executable(grpc_print_google_default_creds_token
   test/core/security/print_google_default_creds_token.cc
@@ -8069,6 +8076,7 @@ target_link_libraries(grpc_print_google_default_creds_token
     target_compile_options(grpc_print_google_default_creds_token PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${_gRPC_CORE_NOSTDCXX_FLAGS}>)
   endif()
 
+endif (gRPC_BUILD_TOOLS)
 if (gRPC_BUILD_TESTS)
 
 add_executable(grpc_security_connector_test
@@ -8137,6 +8145,7 @@ target_link_libraries(grpc_ssl_credentials_test
   endif()
 
 endif (gRPC_BUILD_TESTS)
+if (gRPC_BUILD_TOOLS)
 
 add_executable(grpc_verify_jwt
   test/core/security/verify_jwt.cc
@@ -8169,6 +8178,7 @@ target_link_libraries(grpc_verify_jwt
     target_compile_options(grpc_verify_jwt PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${_gRPC_CORE_NOSTDCXX_FLAGS}>)
   endif()
 
+endif (gRPC_BUILD_TOOLS)
 if (gRPC_BUILD_TESTS)
 if(_gRPC_PLATFORM_LINUX)
 
@@ -16271,6 +16281,7 @@ target_link_libraries(public_headers_must_be_c89
 
 
 endif (gRPC_BUILD_TESTS)
+if (gRPC_BUILD_TOOLS)
 
 add_executable(gen_hpack_tables
   tools/codegen/core/gen_hpack_tables.cc
@@ -16297,6 +16308,8 @@ target_link_libraries(gen_hpack_tables
 )
 
 
+endif (gRPC_BUILD_TOOLS)
+if (gRPC_BUILD_TOOLS)
 
 add_executable(gen_legal_metadata_characters
   tools/codegen/core/gen_legal_metadata_characters.cc
@@ -16321,6 +16334,8 @@ target_link_libraries(gen_legal_metadata_characters
 )
 
 
+endif (gRPC_BUILD_TOOLS)
+if (gRPC_BUILD_TOOLS)
 
 add_executable(gen_percent_encoding_tables
   tools/codegen/core/gen_percent_encoding_tables.cc
@@ -16345,6 +16360,7 @@ target_link_libraries(gen_percent_encoding_tables
 )
 
 
+endif (gRPC_BUILD_TOOLS)
 if (gRPC_BUILD_TESTS)
 
 add_executable(badreq_bad_client_test
