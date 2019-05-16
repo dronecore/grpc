@@ -276,6 +276,7 @@
   % endfor
   )
 
+  if (gRPC_BUILD_TOOLS)
   add_custom_target(tools_c
     DEPENDS
   % for tgt in targets:
@@ -296,6 +297,7 @@
 
   add_custom_target(tools
     DEPENDS tools_c tools_cxx)
+  endif (gRPC_BUILD_TOOLS)
 
   if (gRPC_BUILD_TESTS)
   add_custom_target(buildtests_c)
@@ -372,12 +374,14 @@
   ${get_platforms_condition_end(tgt.platforms)}\
   endif (gRPC_BUILD_CODEGEN)
   % else:
+  if (gRPC_BUILD_TOOLS)
   ${get_platforms_condition_begin(tgt.platforms)}\
   ${cc_binary(tgt)}
   % if not tgt.build in ["tool"]:
   ${cc_install(tgt)}
   % endif
   ${get_platforms_condition_end(tgt.platforms)}\
+  endif (gRPC_BUILD_TOOLS)
   % endif
   % endif
   % endfor
