@@ -193,7 +193,7 @@ function(protobuf_generate_grpc_cpp)
     set(RELFIL_WE "${REL_DIR}/${FIL_WE}")
 
     #if cross-compiling, find host plugin
-    if(CMAKE_CROSSCOMPILING)
+    if(CMAKE_CROSSCOMPILING AND NOT CMAKE_SYSTEM_NAME STREQUAL CMAKE_HOST_SYSTEM_NAME)
         find_program(_gRPC_CPP_PLUGIN grpc_cpp_plugin)
     else()
         set(_gRPC_CPP_PLUGIN $<TARGET_FILE:grpc_cpp_plugin>)
